@@ -387,6 +387,49 @@ footer{padding:70px 0 30px;border-top:1px solid var(--line);margin-top:40px}
   .soft-body .btn,.proj.cta-card .btn{margin-right:56px}
   .c-card span{word-break:break-all}
 }
+
+/* ===== project live preview ===== */
+.proj-actions{display:flex;align-items:center;gap:14px;margin-top:20px;flex-wrap:wrap}
+.proj-actions .link{margin-top:0;color:var(--muted);font-weight:500;font-size:.85rem}
+.view-btn{border:0;cursor:pointer;background:var(--grad);color:#fff;font:600 .88rem Inter;padding:10px 18px;border-radius:999px;box-shadow:0 8px 20px -10px rgba(139,13,26,.9)}
+.view-btn:hover{filter:brightness(1.12)}
+.proj-thumb.clickable{cursor:pointer}
+.thumb-hover{position:absolute;inset:auto 12px 12px auto;z-index:2;background:rgba(11,11,11,.85);color:#fff;font:600 .78rem Inter;padding:7px 12px;border-radius:999px;opacity:0;transform:translateY(6px);transition:.25s}
+.proj:hover .thumb-hover{opacity:1;transform:none}
+@media(hover:none){.thumb-hover{opacity:1;transform:none}}
+.pv{position:fixed;inset:0;z-index:120;background:rgba(5,5,5,.78);backdrop-filter:blur(6px);display:grid;place-items:center;padding:24px;animation:pvIn .25s}
+@keyframes pvIn{from{opacity:0}}
+.pv-box{width:min(1280px,100%);height:min(88vh,900px);background:#121010;border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.8);animation:pvUp .3s cubic-bezier(.2,.8,.3,1)}
+@keyframes pvUp{from{transform:translateY(20px) scale(.98);opacity:0}}
+.pv-bar{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#1a1716;border-bottom:1px solid var(--line)}
+.pv-dots{display:flex;gap:6px}.pv-dots i{width:11px;height:11px;border-radius:50%;background:#3a3331}.pv-dots i:first-child{background:#8B0D1A}
+.pv-url{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:#0e0c0c;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-url span:last-child{overflow:hidden;text-overflow:ellipsis}
+.pv-tools{display:flex;align-items:center;gap:8px}
+.pv-dev{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.pv-dev button{border:0;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer;font-size:.95rem}
+.pv-dev button.on{background:var(--text);color:var(--bg)}
+.pv-open{font-size:.84rem;font-weight:600;color:var(--text);border:1px solid var(--line);padding:7px 14px;border-radius:999px;white-space:nowrap}
+.pv-open:hover{border-color:var(--accent2)}
+.pv-x{border:0;background:var(--accent);color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;flex:none}
+.pv-head{display:none}
+.pv-stage{position:relative;flex:1;background:#fff;display:flex;justify-content:center;overflow:hidden}
+.pv-stage.mobile{background:#1a1716;padding:18px 0}
+.pv-stage iframe{width:100%;height:100%;border:0;background:#fff;transition:width .3s}
+.pv-stage.mobile iframe{width:390px;max-width:100%;border-radius:22px;box-shadow:0 0 0 8px #2a2523}
+.pv-load{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#121010;color:var(--muted);z-index:2;text-align:center;padding:20px;font-size:.92rem}
+.pv-load.gone{display:none}
+.spin{width:38px;height:38px;border-radius:50%;border:3px solid #2a2523;border-top-color:var(--accent2);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+body.pv-lock{overflow:hidden}
+@media(max-width:760px){
+  .pv{padding:0}
+  .pv-box{width:100%;height:100%;height:100dvh;border-radius:0;border:0}
+  .pv-dots,.pv-dev{display:none}
+  .pv-bar{padding:8px 10px;gap:8px}
+  .pv-url{font-size:.78rem;padding:6px 12px}
+  .pv-open{padding:6px 12px;font-size:.8rem}
+}
 </style>
 </head>
 <body>
@@ -666,6 +709,27 @@ const SITE = {
   </div>
 </footer>
 
+<div class="pv" id="pv" role="dialog" aria-modal="true" aria-labelledby="pvTitle" hidden>
+  <div class="pv-box">
+    <div class="pv-bar">
+      <div class="pv-dots"><i></i><i></i><i></i></div>
+      <div class="pv-url"><span class="pv-lock">🔒</span><span id="pvUrl"></span></div>
+      <div class="pv-tools">
+        <div class="pv-dev" role="group" aria-label="Preview size">
+          <button type="button" data-d="desktop" class="on" title="Desktop view">🖥</button>
+          <button type="button" data-d="mobile" title="Mobile view">📱</button>
+        </div>
+        <a id="pvOpen" target="_blank" rel="noopener" class="pv-open">Open ↗</a>
+        <button type="button" class="pv-x" id="pvClose" aria-label="Close preview">✕</button>
+      </div>
+    </div>
+    <div class="pv-head"><b id="pvTitle"></b><span id="pvTags"></span></div>
+    <div class="pv-stage" id="pvStage">
+      <div class="pv-load" id="pvLoad"><div class="spin"></div><p id="pvMsg">Loading site…</p></div>
+      <iframe id="pvFrame" title="Project preview" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </div>
+</div>
 <div class="wa-widget" id="waWidget">
   <div class="wa-teaser" id="waTeaser" role="button" tabindex="0">👋 Hi! Want a website or software? <b>Chat with us</b><button class="wa-tx" id="waTeaserX" aria-label="Dismiss">×</button></div>
   <div class="wa-panel" id="waPanel" role="dialog" aria-label="Chat with Spoaxio on WhatsApp" aria-hidden="true">
@@ -734,14 +798,14 @@ SERVICES.forEach((c,ci)=>{
 // img: screenshot in assets/projects/ ; mock: generated app preview when no screenshot
 const PROJECTS = [
   { title:"The New Pharmacy & Stores", place:"Coonoor", cat:"E-commerce", tags:["E-commerce","Prescription upload"], desc:"Online store for a Coonoor pharmacy serving the Nilgiris since 1973 — shop online, upload prescriptions, customer accounts and WhatsApp enquiries.", url:"https://newpharmacycnr.com", img:"assets/projects/pharmacy.jpg" },
-  { title:"Gym CRM", place:"Multi-branch gyms", cat:"Web App", tags:["Web App","Next.js","NestJS","PostgreSQL"], desc:"Software for gyms with several branches — member registration, memberships with GST invoices, payments, lead pipeline and an owner dashboard for dues and renewals.", url:"https://gym-crm-template.onrender.com", img:"assets/projects/gymcrm.jpg" },
+  { title:"Gym CRM", place:"Multi-branch gyms", cat:"Web App", tags:["Web App","Next.js","NestJS","PostgreSQL"], desc:"Software for gyms with several branches — member registration, memberships with GST invoices, payments, lead pipeline and an owner dashboard for dues and renewals.", url:"https://gym-crm-template.onrender.com", noEmbed:true, sleeps:true, img:"assets/projects/gymcrm.jpg" },
   { title:"Abdulla Sports", place:"Coonoor", cat:"E-commerce", tags:["E-commerce","Next.js","Firebase","Razorpay"], desc:"Online store for the Nilgiris' largest sports & adventure shop — 10,000+ products, weekly offers, UPI/card payments and cash on delivery.", img:"assets/projects/abdulla.jpg" },
   { title:"Ooty Escapes", place:"Ooty", cat:"Web App", tags:["Web App","React","Firebase"], desc:"Tourism platform to discover places, book stays and plan an Ooty trip — with user accounts and a full admin dashboard.", url:"https://spoaxio0.web.app", img:"assets/projects/ooty.jpg" },
-  { title:"Dr. SRN Dental Clinic", place:"Ooty", cat:"Website", tags:["Website","Next.js","Appointments"], desc:"Fast, mobile-first clinic website with treatments, clinic tour, reviews and online appointment booking.", url:"https://dr-srn-dental-clinic.onrender.com", img:"assets/projects/dental.jpg" },
+  { title:"Dr. SRN Dental Clinic", place:"Ooty", cat:"Website", tags:["Website","Next.js","Appointments"], desc:"Fast, mobile-first clinic website with treatments, clinic tour, reviews and online appointment booking.", url:"https://dr-srn-dental-clinic.onrender.com", sleeps:true, img:"assets/projects/dental.jpg" },
   { title:"Ruckmani Gandhi Clinic", place:"Ooty", cat:"Web App", tags:["Website","Patient portal","Admin"], desc:"Diabetes care clinic site for Dr. Sugumaran G — appointment booking, lab tests, online consultation, patient portal and admin dashboard.", url:"https://dr-g-sugumaran-clinic.onrender.com", img:"assets/projects/sugumaran.jpg" },
   { title:"Opticare Optical House", place:"Ooty", cat:"Website", tags:["Website","Virtual try-on","SEO"], desc:"Premium eyewear website with collections, lens guide, eye-test booking and a virtual try-on using the phone camera.", url:"https://opticare-optical-house.onrender.com", img:"assets/projects/opticare.jpg" },
-  { title:"Thalassery Thakkaram", place:"Ooty", cat:"Website", tags:["Website","Admin panel","QR menu"], desc:"Restaurant website with an admin panel to manage the menu and photos, plus a scannable QR menu for tables.", url:"https://thalassery-thakkaram.onrender.com", img:"assets/projects/thalassery.jpg" },
-  { title:"Vishim Snack Studio", place:"Ooty", cat:"Website", tags:["Website","Admin panel"], desc:"Warm, appetising snack-shop website with a menu the owner can update anytime from the admin panel.", url:"https://vishim-snack-studio.onrender.com", img:"assets/projects/vishim.jpg" },
+  { title:"Thalassery Thakkaram", place:"Ooty", cat:"Website", tags:["Website","Admin panel","QR menu"], desc:"Restaurant website with an admin panel to manage the menu and photos, plus a scannable QR menu for tables.", url:"https://thalassery-thakkaram.onrender.com", sleeps:true, img:"assets/projects/thalassery.jpg" },
+  { title:"Vishim Snack Studio", place:"Ooty", cat:"Website", tags:["Website","Admin panel"], desc:"Warm, appetising snack-shop website with a menu the owner can update anytime from the admin panel.", url:"https://vishim-snack-studio.onrender.com", sleeps:true, img:"assets/projects/vishim.jpg" },
   { title:"Tibet Corner", place:"Ooty", cat:"Website", tags:["Website","Admin dashboard"], desc:"Atmospheric restaurant website with signature dishes, table booking enquiries and an admin dashboard with visit stats.", url:"https://tibet-corner-cafe.onrender.com", img:"assets/projects/tibet.jpg" },
   { title:"Gorkhahill's Shopping Complex", place:"Nilgiris", cat:"E-commerce", tags:["E-commerce","React","Vite"], desc:"Premium grocery storefront with search, category filters, wishlist, quick-view, cart and checkout.", url:"https://gurkhahill-shopping-complex.onrender.com", img:"assets/projects/gurkhahill.jpg" },
 ];
@@ -754,7 +818,8 @@ PROJECTS.forEach((p,i)=>{
   const el=document.createElement("article");
   el.className="proj reveal";el.dataset.cat=p.cat;
   const thumb=p.img?`<img src="${p.img}" alt="${p.title} website" loading="lazy">`:appMock(p.mock);
-  el.innerHTML=`<div class="proj-thumb">${p.url?'<span class="live tbadge">Live</span>':""}${thumb}</div><div class="proj-body"><div class="proj-meta">${p.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div><h3>${p.title}</h3><p>${p.desc}</p>${p.url?`<a class="link" href="${p.url}" target="_blank" rel="noopener">Visit site ↗</a>`:`<span class="link" style="color:var(--dim)">📍 ${p.place}</span>`}</div>`;
+  el.innerHTML=`<div class="proj-thumb">${p.url?'<span class="live tbadge">Live</span>':""}${thumb}</div><div class="proj-body"><div class="proj-meta">${p.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div><h3>${p.title}</h3><p>${p.desc}</p>${p.url?`<div class="proj-actions"><button type="button" class="view-btn" data-i="${i}">${p.noEmbed?"Visit site ↗":"View live site"}</button><a class="link" href="${p.url}" target="_blank" rel="noopener" aria-label="Open ${p.title} in a new tab">New tab ↗</a></div>`:`<span class="link" style="color:var(--dim)">📍 ${p.place}</span>`}</div>`;
+  if(p.url){const t=el.querySelector(".proj-thumb");t.classList.add("clickable");t.dataset.i=i;t.insertAdjacentHTML("beforeend",`<span class="thumb-hover">${p.noEmbed?"Open site ↗":"▶ View live"}</span>`)}
   grid.appendChild(el);
 });
 const cta=document.createElement("article");
@@ -772,6 +837,34 @@ grid.addEventListener("scroll",()=>requestAnimationFrame(updIdx),{passive:true})
 document.querySelectorAll("#filters button").forEach(b=>b.addEventListener("click",()=>{grid.scrollTo({left:0});setTimeout(updIdx,50)}));
 document.querySelectorAll(".svc-panel .pkgs").forEach(pk=>pk.insertAdjacentHTML("afterend",'<div class="swipe-hint"><span>Swipe for more packages →</span></div>'));
 
+
+
+/* ===== project live preview ===== */
+(()=>{
+  const pv=document.getElementById("pv"),fr=pvFrame,ld=pvLoad,stage=pvStage;let lastFocus=null,slowT;
+  function open(i){
+    const p=PROJECTS[i];if(!p||!p.url)return;
+    if(p.noEmbed){window.open(p.url,"_blank","noopener");return}
+    lastFocus=document.activeElement;
+    pvTitle.textContent=p.title;pvUrl.textContent=p.url.replace(/^https?:\/\//,"");pvOpen.href=p.url;
+    ld.classList.remove("gone");
+    pvMsg.innerHTML=p.sleeps?"Waking the site up… <br><small>This one is on a free server and can take up to a minute the first time.</small>":"Loading "+p.title+"…";
+    clearTimeout(slowT);
+    slowT=setTimeout(()=>{if(!ld.classList.contains("gone"))pvMsg.innerHTML+=`<br><br><a href="${p.url}" target="_blank" rel="noopener" style="color:var(--accent2);font-weight:600">Taking long? Open in a new tab ↗</a>`},p.sleeps?25000:9000);
+    fr.src=p.url;
+    pv.hidden=false;document.body.classList.add("pv-lock");
+    setDev(innerWidth<760?"desktop":"desktop");
+    pvClose.focus();
+  }
+  function close(){pv.hidden=true;fr.src="about:blank";document.body.classList.remove("pv-lock");clearTimeout(slowT);lastFocus&&lastFocus.focus()}
+  function setDev(d){stage.classList.toggle("mobile",d==="mobile");pv.querySelectorAll(".pv-dev button").forEach(b=>b.classList.toggle("on",b.dataset.d===d))}
+  fr.addEventListener("load",()=>{if(fr.src&&fr.src!=="about:blank")ld.classList.add("gone")});
+  pv.querySelectorAll(".pv-dev button").forEach(b=>b.onclick=()=>setDev(b.dataset.d));
+  pvClose.onclick=close;
+  pv.addEventListener("click",e=>{if(e.target===pv)close()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!pv.hidden)close()});
+  grid.addEventListener("click",e=>{const t=e.target.closest(".view-btn,.proj-thumb.clickable");if(t){e.preventDefault();open(+t.dataset.i)}});
+})();
 
 /* ===== WhatsApp widget ===== */
 const WA_QUICK=[
