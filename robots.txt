@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://spoaxio.in/sitemap.xml
